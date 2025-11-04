@@ -76,5 +76,19 @@ func main() {
 		user = append(user, User{Id: id, Name: name})
 
 	})
+	//delete
+	r.DELETE("/users/:id", func(ctx *gin.Context) {
+		id := ctx.Param("id")
+		for i, u := range user {
+			if u.Id == id {
+				user = append(user[:i], user[i+1:]...)
+				return
+			}
+		}
+		ctx.JSON(404, Response{
+			Success: false,
+			Message: "tidak ditemukan id tsb",
+		})
+	})
 	r.Run(":8081")
 }
