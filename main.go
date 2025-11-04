@@ -14,11 +14,16 @@ type Query struct {
 	Name string `form:"name"`
 }
 
+type User struct {
+	Id   string `json:"id"`
+	Name string `json:"name"`
+}
+
 func main() {
 	r := gin.Default()
 	var data Query
 	// get
-	var names []string
+	var user []User
 	r.GET("/users", func(ctx *gin.Context) {
 
 		err := ctx.BindQuery(&data)
@@ -33,7 +38,26 @@ func main() {
 		ctx.JSON(200, Response{
 			Success: true,
 			Message: "Nama list",
-			Data:    names,
+			Data:    user,
+		})
+	})
+
+	//get id
+	r.GET("/users/:id", func(ctx *gin.Context) {
+		id := ctx.Param("id")
+		for _, u := range user {
+			if u.Id == id {
+				ctx.JSON(200, Response{
+					Success: true,
+					Message: "User ditemukan",
+					Data:    u,
+				})
+				return
+			}
+		}
+		ctx.JSON(404, Response{
+			Success: false,
+			Message: "User tidak ditemukan",
 		})
 	})
 	//post
@@ -46,13 +70,11 @@ func main() {
 			})
 			return
 		}
-		id := ctx.Query("id")
-		name := ctx.Query("name")
+		id := ctx.PostForm("id")
+		name := ctx.PostForm("name")
 
-		names = append(names, name, id)
+		user = append(user, User{Id: id, Name: name})
 
 	})
-	//delete
-	r.DELETE("/users", func(ctx *gin.Context) {})
 	r.Run(":8081")
 }
