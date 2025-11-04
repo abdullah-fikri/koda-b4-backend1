@@ -90,5 +90,22 @@ func main() {
 			Message: "tidak ditemukan id tsb",
 		})
 	})
+	//patch
+	r.PATCH("/users/:id", func(ctx *gin.Context) {
+		idQ := ctx.PostForm("id")
+		name := ctx.PostForm("name")
+
+		id := ctx.Param("id")
+		for i, u := range user {
+			if u.Id == id {
+				user[i] = User{Id: idQ, Name: name}
+			}
+		}
+
+		ctx.JSON(404, Response{
+			Success: false,
+			Message: "tidak ditemukan id tsb",
+		})
+	})
 	r.Run(":8081")
 }
