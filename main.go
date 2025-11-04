@@ -19,6 +19,12 @@ type User struct {
 	Name string `json:"name"`
 }
 
+type Accounts struct {
+	Id       string `form:"name"`
+	Email    string `form:"email" binding:"required,email"`
+	Password string `form:"password" binding:"min=8,max=20"`
+}
+
 func main() {
 	r := gin.Default()
 	var data Query
@@ -105,6 +111,55 @@ func main() {
 		ctx.JSON(404, Response{
 			Success: false,
 			Message: "tidak ditemukan id tsb",
+		})
+	})
+
+	// minitask 2
+	//post
+	var account []Accounts
+	r.POST("/auth/register", func(ctx *gin.Context) {
+		idQ := ctx.PostForm("id")
+		email := ctx.PostForm("email")
+		password := ctx.PostForm("password")
+		account = append(account, Accounts{Id: idQ, Email: email, Password: password})
+	})
+
+	//get
+	r.GET("/auth/register", func(ctx *gin.Context) {
+
+		err := ctx.BindQuery(&data)
+		if err != nil {
+			ctx.JSON(400, Response{
+				Success: false,
+				Message: "Error",
+			})
+			return
+		}
+
+		ctx.JSON(200, Response{
+			Success: true,
+			Message: "Nama list",
+			Data:    account,
+		})
+	})
+
+	//login
+	r.POST("/auth/login", func(ctx *gin.Context) {
+		email := ctx.PostForm("email")
+		password := ctx.PostForm("password")
+		for _, u := range account {
+			if u.Email == email && u.Password == password {
+				ctx.JSON(200, Response{
+					Success: true,
+					Message: "login sukses",
+					Data:    u,
+				})
+				return
+			}
+		}
+		ctx.JSON(404, Response{
+			Success: false,
+			Message: "wrong email or password",
 		})
 	})
 	r.Run(":8081")
