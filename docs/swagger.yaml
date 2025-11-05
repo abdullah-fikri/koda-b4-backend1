@@ -57,6 +57,10 @@ paths:
   /auth/register:
     get:
       parameters:
+      - description: Cari email
+        in: query
+        name: search
+        type: string
       - description: Nomor halaman (default 1)
         in: query
         name: page
@@ -79,7 +83,7 @@ paths:
                     $ref: '#/definitions/models.Accounts'
                   type: array
               type: object
-      summary: Melihat semua akun yang sudah terdaftar (Pagination)
+      summary: Melihat semua akun yang sudah terdaftar (Pagination + Search)
       tags:
       - Auth
     post:

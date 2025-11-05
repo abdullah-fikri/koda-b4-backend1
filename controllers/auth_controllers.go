@@ -5,6 +5,7 @@ import (
 	"backend1/responses"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -79,9 +80,10 @@ func Register(ctx *gin.Context) {
 }
 
 // GetRegisteredUsers godoc
-// @Summary Melihat semua akun yang sudah terdaftar (Pagination)
+// @Summary Melihat semua akun yang sudah terdaftar (Pagination + Search)
 // @Tags Auth
 // @Produce json
+// @Param search query string false "Cari email"
 // @Param page query int false "Nomor halaman (default 1)"
 // @Param limit query int false "Jumlah data per halaman (default 5)"
 // @Success 200 {object} responses.Response{data=[]models.Accounts}
@@ -89,6 +91,16 @@ func Register(ctx *gin.Context) {
 func GetRegisteredUsers(ctx *gin.Context) {
 	page := 1
 	limit := 5
+	search := ctx.Query("search")
+	filtered := account
+	if search != "" {
+		filtered = []models.Accounts{}
+		for _, x := range account {
+			if strings.Contains(strings.ToLower(x.Email), strings.ToLower(search)) {
+				filtered = append(filtered, x)
+			}
+		}
+	}
 
 	if ctx.Query("page") != "" {
 		fmt.Sscan(ctx.Query("page"), &page)
@@ -98,7 +110,7 @@ func GetRegisteredUsers(ctx *gin.Context) {
 	}
 	start := (page - 1) * limit
 	end := start + limit
-	if start >= len(account) {
+	if start >= len(filtered) {
 		ctx.JSON(200, responses.Response{
 			Success: true,
 			Message: "List akun",
@@ -106,11 +118,11 @@ func GetRegisteredUsers(ctx *gin.Context) {
 		})
 		return
 	}
-	if end > len(account) {
-		end = len(account)
+	if end > len(filtered) {
+		end = len(filtered)
 	}
 
-	pagedData := account[start:end]
+	pagedData := filtered[start:end]
 
 	ctx.JSON(200, responses.Response{
 		Success: true,

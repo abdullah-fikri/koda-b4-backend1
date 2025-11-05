@@ -73,8 +73,14 @@ const docTemplate = `{
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Melihat semua akun yang sudah terdaftar (Pagination)",
+                "summary": "Melihat semua akun yang sudah terdaftar (Pagination + Search)",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Cari email",
+                        "name": "search",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "Nomor halaman (default 1)",
