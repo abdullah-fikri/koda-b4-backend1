@@ -39,82 +39,88 @@ func hashPassword(password string) []byte {
 
 var account []models.Accounts
 
-func AuthController(r *gin.Engine) {
-	r.POST("/auth/register", func(ctx *gin.Context) {
-		idQ := ctx.PostForm("id")
-		email := ctx.PostForm("email")
-		password := ctx.PostForm("password")
-
-		// argon := argon2.DefaultConfig()
-		// bytePassword, err := argon.HashEncoded([]byte(password))
-		// if err != nil {
-		// 	ctx.JSON(400, responses.Response{
-		// 		Success: false,
-		// 		Message: "Failed to hash password",
-		// 	})
-		// 	return
-		// }
-		hash := hashPassword(password)
-
-		tmp := models.Accounts{
-			Id:       idQ,
-			Email:    email,
-			Password: string(hash),
-		}
-
-		account = append(account, tmp)
-
-		ctx.JSON(200, responses.Response{
-			Success: true,
-			Message: "Register success",
+// Register godoc
+// @Summary Register akun baru
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param Body body models.Accounts true "Register Data"
+// @Success 200 {object} responses.Response{data=models.Accounts}
+// @Router /auth/register [post]
+func Register(ctx *gin.Context) {
+	var req models.Accounts
+	if err := ctx.BindJSON(&req); err != nil {
+		ctx.JSON(400, responses.Response{
+			Success: false,
+			Message: "Invalid JSON",
 		})
+		return
+	}
+
+	req.Password = string(hashPassword(req.Password))
+	account = append(account, req)
+
+	ctx.JSON(200, responses.Response{
+		Success: true,
+		Message: "Register success",
+		Data:    req,
 	})
+}
 
-	r.GET("/auth/register", func(ctx *gin.Context) {
+// GetRegisteredUsers godoc
+// @Summary Melihat semua akun yang sudah terdaftar
+// @Tags Auth
+// @Produce json
+// @Success 200 {object} responses.Response{data=[]models.Accounts}
+// @Router /auth/register [get]
+func GetRegisteredUsers(ctx *gin.Context) {
+	ctx.JSON(200, responses.Response{
+		Success: true,
+		Message: "List akun",
+		Data:    account,
+	})
+}
 
-		err := ctx.BindQuery(&data)
-		if err != nil {
-			ctx.JSON(400, responses.Response{
-				Success: false,
-				Message: "Error",
+// Login godoc
+// @Summary Login user
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param Body body models.Accounts true "Login Data"
+// @Success 200 {object} responses.Response{data=models.Accounts}
+// @Router /auth/login [post]
+func Login(ctx *gin.Context) {
+	var req models.Accounts
+	if err := ctx.BindJSON(&req); err != nil {
+		ctx.JSON(400, responses.Response{
+			Success: false,
+			Message: "Invalid JSON",
+		})
+		return
+	}
+
+	for _, u := range account {
+		ok, _ := argon2.VerifyEncoded([]byte(req.Password), []byte(u.Password))
+		if u.Email == req.Email && ok {
+			ctx.JSON(200, responses.Response{
+				Success: true,
+				Message: "Login sukses",
+				Data:    u,
 			})
 			return
 		}
+	}
 
-		ctx.JSON(200, responses.Response{
-			Success: true,
-			Message: "Nama list",
-			Data:    account,
-		})
+	ctx.JSON(404, responses.Response{
+		Success: false,
+		Message: "Wrong email or password",
 	})
+}
 
-	r.POST("/auth/login", func(ctx *gin.Context) {
-		email := ctx.PostForm("email")
-		password := ctx.PostForm("password")
+func AuthController(r *gin.Engine) {
+	auth := r.Group("/auth")
 
-		for _, u := range account {
-			if email == u.Email {
-				ok, err := argon2.VerifyEncoded([]byte(password), []byte(u.Password))
-				if err != nil || !ok {
-					ctx.JSON(400, responses.Response{
-						Success: false,
-						Message: "wrong email or password",
-					})
-					return
-				}
-
-				ctx.JSON(200, responses.Response{
-					Success: true,
-					Message: "login sukses",
-					Data:    u,
-				})
-				return
-
-			}
-		}
-		ctx.JSON(404, responses.Response{
-			Success: false,
-			Message: "wrong email or password",
-		})
-	})
+	auth.POST("/register", Register)
+	auth.GET("/register", GetRegisteredUsers)
+	auth.POST("/login", Login)
 }
