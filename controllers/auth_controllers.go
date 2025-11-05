@@ -31,6 +31,12 @@ func AllowPreflight(r *gin.Engine) gin.HandlerFunc {
 	}
 }
 
+func hashPassword(password string) []byte {
+	argon := argon2.DefaultConfig()
+	bytePassword, _ := argon.HashEncoded([]byte(password))
+	return bytePassword
+}
+
 var account []models.Accounts
 
 func AuthController(r *gin.Engine) {
@@ -39,20 +45,21 @@ func AuthController(r *gin.Engine) {
 		email := ctx.PostForm("email")
 		password := ctx.PostForm("password")
 
-		argon := argon2.DefaultConfig()
-		bytePassword, err := argon.HashEncoded([]byte(password))
-		if err != nil {
-			ctx.JSON(400, responses.Response{
-				Success: false,
-				Message: "Failed to hash password",
-			})
-			return
-		}
+		// argon := argon2.DefaultConfig()
+		// bytePassword, err := argon.HashEncoded([]byte(password))
+		// if err != nil {
+		// 	ctx.JSON(400, responses.Response{
+		// 		Success: false,
+		// 		Message: "Failed to hash password",
+		// 	})
+		// 	return
+		// }
+		hash := hashPassword(password)
 
 		tmp := models.Accounts{
 			Id:       idQ,
 			Email:    email,
-			Password: string(bytePassword),
+			Password: string(hash),
 		}
 
 		account = append(account, tmp)
