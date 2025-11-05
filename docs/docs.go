@@ -18,7 +18,7 @@ const docTemplate = `{
         "/auth/login": {
             "post": {
                 "consumes": [
-                    "application/json"
+                    "application/x-www-form-urlencoded"
                 ],
                 "produces": [
                     "application/json"
@@ -29,13 +29,18 @@ const docTemplate = `{
                 "summary": "Login user",
                 "parameters": [
                     {
-                        "description": "Login Data",
-                        "name": "Body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.Accounts"
-                        }
+                        "type": "string",
+                        "description": "Email",
+                        "name": "email",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Password",
+                        "name": "password",
+                        "in": "formData",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -68,7 +73,21 @@ const docTemplate = `{
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Melihat semua akun yang sudah terdaftar",
+                "summary": "Melihat semua akun yang sudah terdaftar (Pagination)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Nomor halaman (default 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Jumlah data per halaman (default 5)",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -95,7 +114,7 @@ const docTemplate = `{
             },
             "post": {
                 "consumes": [
-                    "application/json"
+                    "application/x-www-form-urlencoded"
                 ],
                 "produces": [
                     "application/json"
@@ -106,13 +125,25 @@ const docTemplate = `{
                 "summary": "Register akun baru",
                 "parameters": [
                     {
-                        "description": "Register Data",
-                        "name": "Body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.Accounts"
-                        }
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Email",
+                        "name": "email",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Password",
+                        "name": "password",
+                        "in": "formData",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -150,11 +181,6 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "string"
-                },
-                "password": {
-                    "type": "string",
-                    "maxLength": 20,
-                    "minLength": 8
                 }
             }
         },

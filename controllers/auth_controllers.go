@@ -3,6 +3,7 @@ package controllers
 import (
 	"backend1/models"
 	"backend1/responses"
+	"fmt"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -42,22 +43,32 @@ var account []models.Accounts
 // Register godoc
 // @Summary Register akun baru
 // @Tags Auth
-// @Accept json
+// @Accept x-www-form-urlencoded
 // @Produce json
-// @Param Body body models.Accounts true "Register Data"
+// @Param id formData string true "User ID"
+// @Param email formData string true "Email"
+// @Param password formData string true "Password"
 // @Success 200 {object} responses.Response{data=models.Accounts}
 // @Router /auth/register [post]
 func Register(ctx *gin.Context) {
-	var req models.Accounts
-	if err := ctx.BindJSON(&req); err != nil {
+	id := ctx.PostForm("id")
+	email := ctx.PostForm("email")
+	password := ctx.PostForm("password")
+
+	if email == "" || password == "" {
 		ctx.JSON(400, responses.Response{
 			Success: false,
-			Message: "Invalid JSON",
+			Message: "Email & Password wajib diisi",
 		})
 		return
 	}
 
-	req.Password = string(hashPassword(req.Password))
+	req := models.Accounts{
+		Id:       id,
+		Email:    email,
+		Password: string(hashPassword(password)),
+	}
+
 	account = append(account, req)
 
 	ctx.JSON(200, responses.Response{
@@ -68,40 +79,62 @@ func Register(ctx *gin.Context) {
 }
 
 // GetRegisteredUsers godoc
-// @Summary Melihat semua akun yang sudah terdaftar
+// @Summary Melihat semua akun yang sudah terdaftar (Pagination)
 // @Tags Auth
 // @Produce json
+// @Param page query int false "Nomor halaman (default 1)"
+// @Param limit query int false "Jumlah data per halaman (default 5)"
 // @Success 200 {object} responses.Response{data=[]models.Accounts}
 // @Router /auth/register [get]
 func GetRegisteredUsers(ctx *gin.Context) {
+	page := 1
+	limit := 5
+
+	if ctx.Query("page") != "" {
+		fmt.Sscan(ctx.Query("page"), &page)
+	}
+	if ctx.Query("limit") != "" {
+		fmt.Sscan(ctx.Query("limit"), &limit)
+	}
+	start := (page - 1) * limit
+	end := start + limit
+	if start >= len(account) {
+		ctx.JSON(200, responses.Response{
+			Success: true,
+			Message: "List akun",
+			Data:    []models.Accounts{},
+		})
+		return
+	}
+	if end > len(account) {
+		end = len(account)
+	}
+
+	pagedData := account[start:end]
+
 	ctx.JSON(200, responses.Response{
 		Success: true,
 		Message: "List akun",
-		Data:    account,
+		Data:    pagedData,
 	})
 }
 
 // Login godoc
 // @Summary Login user
 // @Tags Auth
-// @Accept json
+// @Accept x-www-form-urlencoded
 // @Produce json
-// @Param Body body models.Accounts true "Login Data"
+// @Param email formData string true "Email"
+// @Param password formData string true "Password"
 // @Success 200 {object} responses.Response{data=models.Accounts}
 // @Router /auth/login [post]
 func Login(ctx *gin.Context) {
-	var req models.Accounts
-	if err := ctx.BindJSON(&req); err != nil {
-		ctx.JSON(400, responses.Response{
-			Success: false,
-			Message: "Invalid JSON",
-		})
-		return
-	}
+	email := ctx.PostForm("email")
+	password := ctx.PostForm("password")
 
 	for _, u := range account {
-		ok, _ := argon2.VerifyEncoded([]byte(req.Password), []byte(u.Password))
-		if u.Email == req.Email && ok {
+		ok, _ := argon2.VerifyEncoded([]byte(password), []byte(u.Password))
+		if u.Email == email && ok {
 			ctx.JSON(200, responses.Response{
 				Success: true,
 				Message: "Login sukses",
