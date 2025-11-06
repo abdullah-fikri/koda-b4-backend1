@@ -250,6 +250,7 @@ const docTemplate = `{
                 "message": {
                     "type": "string"
                 },
+                "results": {},
                 "success": {
                     "type": "boolean"
                 }

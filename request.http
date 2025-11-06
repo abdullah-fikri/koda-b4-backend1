@@ -45,31 +45,30 @@ Content-Type: application/x-www-form-urlencoded
 email=fikki@gmail.com&password=1234567890
 
 
-###
+### // register
 
 POST /auth/register HTTP/1.1
 Host: localhost:8081
 Content-Type: application/x-www-form-urlencoded
 
-id=2&email=fikki@gmail.com&password=1234567890
+id=1&email=fikki@gmail.com&password=1234567890
 
-###
+### // list semua user
 GET http://localhost:8081/auth/register
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzYyNTA4NzU5LCJpYXQiOjE3NjI0MjIzNTl9.TIymty-ZFcULf4Z1O5WhqFwCbd4x10KLSA4phkik0SE
 
 
-###
+
+### //login
 POST http://localhost:8081/auth/login
-Content-Type: application/json
+Content-Type: application/x-www-form-urlencoded
 
-{
-  "email": "test@mail.com",
-  "password": "secretpass"
-}
+id=1&email=fikki@gmail.com&password=1234567890
 
-
-### 
+### // upload file
 PATCH http://localhost:8081/auth/users/1/profile-picture
 Content-Type: multipart/form-data; boundary=MyBoundary
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNzYyNTA4NzU5LCJpYXQiOjE3NjI0MjIzNTl9.TIymty-ZFcULf4Z1O5WhqFwCbd4x10KLSA4phkik0SE
 
 --MyBoundary
 Content-Disposition: form-data; name="picture"; filename="tes.jpeg"

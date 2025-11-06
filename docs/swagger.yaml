@@ -16,6 +16,7 @@ definitions:
       data: {}
       message:
         type: string
+      results: {}
       success:
         type: boolean
     type: object

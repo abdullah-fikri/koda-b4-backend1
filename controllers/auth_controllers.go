@@ -1,11 +1,14 @@
 package controllers
 
 import (
+	"backend1/lib"
+	"backend1/middleware"
 	"backend1/models"
 	"backend1/responses"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -64,7 +67,6 @@ func Register(ctx *gin.Context) {
 		})
 		return
 	}
-
 	req := models.Accounts{
 		Id:       id,
 		Email:    email,
@@ -148,10 +150,16 @@ func Login(ctx *gin.Context) {
 	for _, u := range account {
 		ok, _ := argon2.VerifyEncoded([]byte(password), []byte(u.Password))
 		if u.Email == email && ok {
+
+			intId, _ := strconv.Atoi(u.Id)
+			token := lib.GeneratedTokens(intId)
 			ctx.JSON(200, responses.Response{
 				Success: true,
 				Message: "Login sukses",
-				Data:    u,
+				Data: map[string]any{
+					"user":  u,
+					"token": token,
+				},
 			})
 			return
 		}
@@ -231,7 +239,11 @@ func AuthController(r *gin.Engine) {
 	auth := r.Group("/auth")
 
 	auth.POST("/register", Register)
-	auth.GET("/register", GetRegisteredUsers)
 	auth.POST("/login", Login)
-	auth.PATCH("/users/:id/profile-picture", UploadPicture)
+
+	protected := auth.Group("/")
+	protected.Use(middleware.Auth())
+
+	protected.PATCH("/users/:id/profile-picture", UploadPicture)
+	protected.GET("/register", GetRegisteredUsers)
 }
