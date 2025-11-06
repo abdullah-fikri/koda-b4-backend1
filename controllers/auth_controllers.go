@@ -5,6 +5,7 @@ import (
 	"backend1/responses"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -179,6 +180,23 @@ func UploadPicture(ctx *gin.Context) {
 			Success: false,
 			Message: "failed",
 		})
+		return
+	}
+
+	ext := strings.ToLower(filepath.Ext(file.Filename))
+	formatExt := []string{".jpg", ".jpeg", ".png"}
+	formatFile := false
+	for _, x := range formatExt {
+		if ext == x {
+			formatFile = true
+		}
+	}
+	if !formatFile {
+		ctx.JSON(400, responses.Response{
+			Success: false,
+			Message: "hanya bisa upload gambar jpg, jpeg, dan png",
+		})
+		return
 	}
 	filename := "profile-picture-" + id + ".jpg"
 	path := "./uploads/" + filename
