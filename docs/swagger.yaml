@@ -6,6 +6,8 @@ definitions:
         type: string
       id:
         type: string
+      profile_picture:
+        type: string
     required:
     - email
     type: object
@@ -118,6 +120,36 @@ paths:
                   $ref: '#/definitions/models.Accounts'
               type: object
       summary: Register akun baru
+      tags:
+      - Auth
+  /auth/users/{id}/profile-picture:
+    patch:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Profile picture (max 1MB)
+        in: formData
+        name: picture
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/responses.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Accounts'
+              type: object
+      summary: Update profile picture user
       tags:
       - Auth
 swagger: "2.0"

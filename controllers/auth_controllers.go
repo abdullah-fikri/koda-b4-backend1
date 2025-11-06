@@ -162,10 +162,58 @@ func Login(ctx *gin.Context) {
 	})
 }
 
+// UploadPicture godoc
+// @Summary Update profile picture user
+// @Tags Auth
+// @Accept multipart/form-data
+// @Produce json
+// @Param id path string true "User ID"
+// @Param picture formData file true "Profile picture (max 1MB)"
+// @Success 200 {object} responses.Response{data=models.Accounts}
+// @Router /auth/users/{id}/profile-picture [patch]
+func UploadPicture(ctx *gin.Context) {
+	id := ctx.Param("id")
+	file, err := ctx.FormFile("picture")
+	if err != nil {
+		ctx.JSON(400, responses.Response{
+			Success: false,
+			Message: "failed",
+		})
+	}
+	filename := "profile-picture-" + id + ".jpg"
+	path := "./uploads/" + filename
+
+	if file.Size > 1<<20 {
+		ctx.JSON(400, responses.Response{
+			Success: false,
+			Message: "file to large",
+		})
+		return
+	}
+	ctx.SaveUploadedFile(file, path)
+	for i, u := range account {
+		if u.Id == id {
+			account[i].ProfilePicture = path
+			ctx.JSON(200, responses.Response{
+				Success: true,
+				Message: "Success save file",
+				Data:    account[i],
+			})
+			return
+		}
+	}
+
+	ctx.JSON(400, responses.Response{
+		Success: false,
+		Message: "id not found",
+	})
+}
+
 func AuthController(r *gin.Engine) {
 	auth := r.Group("/auth")
 
 	auth.POST("/register", Register)
 	auth.GET("/register", GetRegisteredUsers)
 	auth.POST("/login", Login)
+	auth.PATCH("/users/:id/profile-picture", UploadPicture)
 }

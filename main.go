@@ -18,6 +18,7 @@ import (
 // @BasePath /
 func main() {
 	r := gin.Default()
+	r.MaxMultipartMemory = 8 << 20
 	r.Use(controllers.CorsMiddleware(r))
 	r.Use(controllers.AllowPreflight(r))
 	view.Routes(r)

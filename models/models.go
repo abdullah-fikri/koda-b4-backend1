@@ -10,7 +10,8 @@ type User struct {
 }
 
 type Accounts struct {
-	Id       string `json:"id"`
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"-" binding:"min=8,max=20"`
+	Id             string `json:"id"`
+	Email          string `json:"email" binding:"required,email"`
+	Password       string `json:"-" binding:"min=8,max=20"`
+	ProfilePicture string `json:"profile_picture"`
 }
